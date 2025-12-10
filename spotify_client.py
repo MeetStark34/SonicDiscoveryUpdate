@@ -57,6 +57,40 @@ class SpotifyClient:
         except Exception:
             return []
 
+    def get_top_artists(self, limit=10):
+        try:
+            results = self.sp.current_user_top_artists(limit=limit, time_range='medium_term')
+            return [{'name': i['name'], 'image_url': i['images'][0]['url'] if i['images'] else None, 'external_url': i['external_urls']['spotify']} for i in results['items']]
+        except Exception:
+            return []
+
+    def get_top_tracks(self, limit=10):
+        try:
+            results = self.sp.current_user_top_tracks(limit=limit, time_range='medium_term')
+            return [self._format_track(item) for item in results['items']]
+        except Exception:
+            return []
+
+    def get_new_releases(self, limit=10):
+        try:
+            results = self.sp.new_releases(limit=limit, country='US')
+            # New releases are albums, so we need to format differently or pick first track? 
+            # Actually, standard format requires 'track' structure. 
+            # API returns albums. Let's return simplified album objects or adapt.
+            # To keep it simple and compatible with simple image/text display, I'll return a custom object list
+            # but ideally I should adhere to _format_track if possible.
+            # However, albums don't have 'preview_url' in the same way. 
+            # Let's return a list of dicts similar to artists but for albums.
+            return [{
+                'name': i['name'], 
+                'artists': [a['name'] for a in i['artists']],
+                'image_url': i['images'][0]['url'] if i['images'] else None, 
+                'external_url': i['external_urls']['spotify'],
+                'release_date': i['release_date']
+            } for i in results['albums']['items']]
+        except Exception:
+            return []
+
     def get_recommendations(self, seed_tracks=None, seed_genres=None, seed_artists=None, limit=10, **kwargs):
         """
         Robust recommendation fetcher. Tries standard API, falls back to Search/TopTracks.

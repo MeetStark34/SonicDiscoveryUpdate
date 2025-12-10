@@ -172,9 +172,17 @@ def main():
             client = SpotifyClient(sp)
             engine = AdvancedFeatureEngine(client)
             show_app(client, engine)
-        except Exception:
+
+        except Exception as e:
+            st.error(f"Session Expired or Error: {e}")
             st.session_state.pop("token", None)
-            st.rerun()
+            import os
+            if os.path.exists(".spotify_cache"):
+                try:
+                    os.remove(".spotify_cache")
+                except:
+                    pass
+            st.button("Login Again", on_click=lambda: st.rerun())
 
 def show_login(auth):
     col1, col2, col3 = st.columns([1, 2, 1])
@@ -216,10 +224,12 @@ def show_app(client, engine):
 
     if page == "Dashboard":
         st.title("Dashboard")
-        st.subheader("Your Top Genres")
+        
+        # 1. Top Eras / Genres
+        st.subheader("Your Taste Profile")
         genres = client.get_top_genres()
         cols = st.columns(5)
-        for i, (g, c) in enumerate(genres):
+        for i, (g, c) in enumerate(genres[:5]):
             with cols[i]:
                 st.markdown(f"""
                 <div style="background: #181818; border: 1px solid #333; padding: 15px; border-radius: 12px; text-align: center;">
@@ -227,9 +237,59 @@ def show_app(client, engine):
                     <div style="font-size: 14px; text-transform: capitalize;">{g}</div>
                 </div>
                 """, unsafe_allow_html=True)
+        
         st.markdown("<br>", unsafe_allow_html=True)
+
+        # 2. Top Artists
+        st.subheader("Your Top Artists")
+        top_artists = client.get_top_artists(5)
+        if top_artists:
+            cols = st.columns(5)
+            for i, artist in enumerate(top_artists):
+                with cols[i]:
+                    img_url = artist['image_url'] if artist['image_url'] else "https://via.placeholder.com/150"
+                    st.markdown(f"""
+                    <div style="text-align: center;">
+                        <img src="{img_url}" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 2px solid #333;">
+                        <div style="margin-top: 10px; font-weight: 600; font-size: 14px;">{artist['name']}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+        else:
+            st.info("No top artists found yet.")
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # 3. Top Tracks
+        st.subheader("Your Top Tracks")
+        render_track_grid(client.get_top_tracks(4))
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # 4. New Releases
+        st.subheader("New Releases")
+        new_releases = client.get_new_releases(4)
+        if new_releases:
+            cols = st.columns(4)
+            for i, album in enumerate(new_releases):
+                with cols[i % 4]:
+                     img_url = album['image_url'] if album['image_url'] else "https://via.placeholder.com/300"
+                     st.markdown(f"""
+                     <div class="track-card">
+                        <div class="img-container">
+                            <img src="{img_url}">
+                        </div>
+                        <div class="track-title" title="{album['name']}">{album['name']}</div>
+                        <div class="track-artist" title="{', '.join(album['artists'])}">{', '.join(album['artists'])}</div>
+                        <div style="font_size: 12px; color: #888; margin-top: 5px;">{album['release_date']}</div>
+                        <a href="{album['external_url']}" target="_blank" class="play-btn">OPEN SPOTIFY</a>
+                     </div>
+                     """, unsafe_allow_html=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # 5. Recently Liked
         st.subheader("Recently Liked")
-        render_track_grid(client.get_liked_tracks(12))
+        render_track_grid(client.get_liked_tracks(8))
 
     elif page == "Discover":
         st.title("Discover New Music")
