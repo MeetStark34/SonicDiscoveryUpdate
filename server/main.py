@@ -53,15 +53,6 @@ def get_client(request: Request, auth: SpotifyAuthenticator = Depends(get_authen
          raise HTTPException(status_code=401, detail="Not authenticated")
     
     try:
-        # Verify/Refresh handled by SpotifyClient? 
-        # Actually SpotifyAuthenticator.get_spotify_client expects token dict or string.
-        # Let's assume raw access token for simplicity or token info.
-        # auth.get_spotify_client expects token_info dict usually.
-        # We'll need to store the whole json or just use access token if spotipy supports it.
-        # checking auth.py: return spotipy.Spotify(auth=token_info['access_token'])
-        # So we just need the access string if we construct it directly, or dict.
-        # For cookie, we'll store just the access_token string to keep it simple, 
-        # but losing refresh capability. for MVP it's okay.
         sp = spotipy.Spotify(auth=token)
         return SpotifyClient(sp)
     except Exception as e:
