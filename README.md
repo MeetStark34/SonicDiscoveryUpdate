@@ -54,7 +54,7 @@ SonicDiscovery is a next-generation music recommendation engine that goes beyond
    ```ini
    SPOTIPY_CLIENT_ID='your_client_id'
    SPOTIPY_CLIENT_SECRET='your_client_secret'
-   SPOTIPY_REDIRECT_URI='http://127.0.0.1:8501/callback'
+   SPOTIPY_REDIRECT_URI='https://sonic-discovery-update-pi.vercel.app'
    ```
 
 3. **Frontend Setup** (in `client/` directory)
