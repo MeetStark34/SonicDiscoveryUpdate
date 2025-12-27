@@ -16,7 +16,7 @@ export function Landing() {
                 className="z-10 text-center space-y-8"
             >
                 <h1 className="text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-500 to-green-300">
-                    SonicDiscovery
+                    M.Stark SonicDiscoveryWeb
                 </h1>
                 <p className="text-xl text-gray-400 font-light tracking-wide">
                     Your Personal AI Music Curator
